@@ -1,4 +1,13 @@
-landtagswahlen
+Landtagswahlen
 ==============
 
-Interaktive Ansicht der Wahlbeteiligung aller Landtagswahlen in Deutschland.
+Wahlbeteiligung bei deutschen Landtagswahlen von 1946 bis heute.
+
+---
+
+## Credits
+
+* [Leaflet](http://leafletjs.com/)
+* [jQuery](http://jquery.com/)
+* [jQuery UI](http://jqueryui.com/)
+* [jQuery UI Touch Punch](https://github.com/furf/jquery-ui-touch-punch)
