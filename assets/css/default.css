@@ -32,7 +32,8 @@ html,
 button,
 input,
 select,
-textarea {
+textarea,
+.leaflet-container {
   color: #333;
   font: 100%/1.5 'neue helvetica', helvetica, arial, sans-serif;
 }
