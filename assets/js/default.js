@@ -184,7 +184,7 @@ $(function() {
 		$(".test div").find("[data-id='" + layer.feature.id + "']").addClass("highlight");
 		layer.setStyle({
 			fillColor: "#000",
-			fillOpacity: .95
+			fillOpacity: .5
 		});
 
 		if ( !L.Browser.ie && !L.Browser.opera ) {
