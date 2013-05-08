@@ -167,7 +167,7 @@ $(function() {
 					// check if an election year already exists
 					if ( parseInt( sliderValue ) >= k ) {
 						count++;
-						str += "<li class='hint--left' data-hint='" + obj[k].turnout + " % (" + k + ")' style='left:" + (count * 4.5)  + "%; height:" + obj[k].turnout + "%; background:" + getLegendColor(obj[k].turnout) + ";'><span style='display: none;'>" + obj[k].turnout + "</span></li>";
+						str += "<li class='hint--right' data-hint='" + obj[k].turnout + " % (" + k + ")' style='left:" + (count * 4.5)  + "%; height:" + obj[k].turnout + "%; background:" + getLegendColor(obj[k].turnout) + ";'><span style='display: none;'>" + obj[k].turnout + "</span></li>";
 					}
 				}
 			}
