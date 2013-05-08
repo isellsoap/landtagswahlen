@@ -61,7 +61,7 @@ $(function() {
 	// build an array of all election years and add lists for the sidebar
 	$.each( data.features, function ( key, val ) {
 		var obj = val.properties.data;
-		$('<div class="y-u-1-4 chart-' + val.id +'"><div class="y-ubox-inner"><h2>' + val.properties.abbr + '</h2><ul/></div></div>').appendTo(".test");
+		$('<div class="y-u-1-2 chart-' + val.id +'"><div class="y-ubox-inner" data-id=' + val.id +'><h2>' + val.properties.name + '</h2><ul/></div></div>').appendTo(".test");
 		for( var k in obj ) {
 			if( obj.hasOwnProperty( k ) ) {
 				k = parseInt( k );
@@ -134,10 +134,6 @@ $(function() {
 
 	info.addTo(map);
 
-	/*
-	** Various functions for single features
-	**/
-
 	function style( feature ) {
 		var sliderValue = $( content ).html(),
 			years = objectKeys( feature.properties.data ),
@@ -171,7 +167,7 @@ $(function() {
 					// check if an election year already exists
 					if ( parseInt( sliderValue ) >= k ) {
 						count++;
-						str += "<li style='left:" + (count * 4.5)  + "%; height:" + obj[k].turnout + "%; background:" + getLegendColor(obj[k].turnout) + ";'><span style='display: none;'>" + obj[k].turnout + "</span></li>";
+						str += "<li class='hint--left' data-hint='" + obj[k].turnout + " % (" + k + ")' style='left:" + (count * 4.5)  + "%; height:" + obj[k].turnout + "%; background:" + getLegendColor(obj[k].turnout) + ";'><span style='display: none;'>" + obj[k].turnout + "</span></li>";
 					}
 				}
 			}
@@ -185,7 +181,7 @@ $(function() {
 
 	function highlightFeature( e ) {
 		var layer = e.target;
-
+		$(".test div").find("[data-id='" + layer.feature.id + "']").addClass("highlight");
 		layer.setStyle({
 			fillColor: "#000",
 			fillOpacity: .95
@@ -199,7 +195,9 @@ $(function() {
 	}
 
 	function resetHighlight( e ) {
-		geojson.resetStyle( e.target );
+		var layer = e.target;
+		$(".test div").find("[data-id='" + layer.feature.id + "']").removeClass("highlight");
+		geojson.resetStyle( layer );
 		info.update();
 	}
 
