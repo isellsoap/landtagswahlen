@@ -1,7 +1,7 @@
 Landtagswahlen
 ==============
 
-Wahlbeteiligung bei deutschen Landtagswahlen von 1946 bis heute.
+[Interaktive Visualisierung](http://isellsoap.github.com/landtagswahlen/) der Wahlbeteiligungen bei deutschen Landtagswahlen von 1946 bis heute.
 
 ---
 
