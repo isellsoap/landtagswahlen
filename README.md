@@ -10,3 +10,11 @@ Landtagswahlen
 * [Leaflet](http://leafletjs.com/)
 * [jQuery](http://jquery.com/), [jQuery UI](http://jqueryui.com/) (+ [jQuery UI Touch Punch](https://github.com/furf/jquery-ui-touch-punch))
 * [Hint.css](https://github.com/chinchang/hint.css)
+
+## Browser
+
+Getestet in folgenden Browsern (Mac OS X 10.8):
+
+* Chrome 26+
+* Firefox 20+
+* Safari 6+
