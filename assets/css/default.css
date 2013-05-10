@@ -155,6 +155,12 @@ svg:not(:root) {
   position: relative;
 }
 
+.year {
+  background: #ededed;
+  margin-left: .25em;
+  padding: .25em .5em;
+}
+
 #slider {
   margin: 1em 2em;
 }
@@ -192,7 +198,7 @@ svg:not(:root) {
 }
 
 .single-chart--de-highlight {
-  opacity: .5;
+  opacity: .3;
 }
 
 .attribution,
