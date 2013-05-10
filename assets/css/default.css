@@ -191,17 +191,8 @@ svg:not(:root) {
   background: #555 !important;
 }
 
-.single-chart--highlight {
-  background: #ccc;
-}
-
-.single-chart--highlight h2 {
-  color: #000;
-  padding-left: .375em;
-}
-
-.single-chart--highlight li {
-  border-top-color: #ccc !important;
+.single-chart--de-highlight {
+  opacity: .5;
 }
 
 .attribution,
@@ -232,7 +223,6 @@ svg:not(:root) {
   background: rgba(255, 255, 255, .8);
   border-radius: 3px;
   box-shadow: 1px 0 2px rgba(0, 0, 0, .2);
-
   padding: .25em .5em;
 }
 

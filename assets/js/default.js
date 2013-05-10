@@ -7,13 +7,14 @@ $(function() {
 	var map = L.map( "map").setView([51.5, 10.9], 5.9),
 		electionYears = [],
 		// control that shows state info on hover
-		info = L.control( { position: "topright" } ),
+		info = L.control(),
 		legend = L.control( { position: "bottomright" } ),
 		sliderID = "#slider",
 		charts = ".charts",
+		singleChart = ".single-chart",
 		electionYear = ".year",
 		singleChartGrid = "y-u-1-4",
-		highlight = "single-chart--highlight",
+		deHighlight = "single-chart--de-highlight",
 		geojson;
 
 	// var layer = L.tileLayer(
@@ -172,7 +173,7 @@ $(function() {
 				if( obj.hasOwnProperty( k ) ) {
 					k = parseInt( k );
 					var lineWidth = 100 / Object.keys( obj ).length,
-						listHeight = $(".single-chart ul").height() / 16;
+						listHeight = $(singleChart + " ul").height() / 16;
 					// check if an election year already exists
 					if ( parseInt( sliderValue ) >= k ) {
 						str += "<li class='hint--right' data-hint='" + germanFloat( obj[k].turnout ) + "&thinsp;% (" + k + ")' style='width:" + lineWidth + "%; border-top:" + ( listHeight - ( ( listHeight * 0.01 ) * obj[k].turnout) ) + "em solid #f5f5f5; background:" + getLegendColor(obj[k].turnout) + ";'><span style='display: none;'>" + obj[k].turnout + "</span></li>";
@@ -204,7 +205,7 @@ $(function() {
 
 	function highlightFeature( e ) {
 		var layer = e.target;
-		$(charts + " div").find("[data-id='" + layer.feature.id + "']").addClass( highlight );
+		$( singleChart ).not("[data-id='" + layer.feature.id + "']").addClass( deHighlight );
 		layer.setStyle({
 			fillColor: "#000",
 			fillOpacity: .5
@@ -219,7 +220,7 @@ $(function() {
 
 	function resetHighlight( e ) {
 		var layer = e.target;
-		$(charts + " div").find("[data-id='" + layer.feature.id + "']").removeClass( highlight );
+		$( singleChart ).not("[data-id='" + layer.feature.id + "']").removeClass( deHighlight );
 		geojson.resetStyle( layer );
 		info.update();
 	}
