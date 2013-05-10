@@ -9,13 +9,13 @@ $(function() {
 		// control that shows state info on hover
 		info = L.control(),
 		legend = L.control( { position: "bottomright" } ),
+		electionYear = ".year",
 		sliderID = "#slider",
 		charts = ".charts",
 		singleChart = ".single-chart",
-		electionYear = ".year",
 		singleChartGrid = "y-u-1-4",
 		deHighlight = "single-chart--de-highlight",
-		geojson;
+		lineWidth, geojson;
 
 	// var layer = L.tileLayer(
 	// 	'http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png', {
@@ -82,6 +82,9 @@ $(function() {
 	});
 
 	electionYears.sort();
+
+	// must be located exactly here
+	var listHeight = ( $( singleChart + " ul" ).height() / 16 );
 
 	/*
 	** Slider
@@ -167,25 +170,25 @@ $(function() {
 				turnout = feature.properties.data[ value ].turnout,
 				obj = feature.properties.data,
 				count = 0,
-				str = "";
+				str = [];
+			lineWidth = 100 / Object.keys( obj ).length;
 
 			for( var k in obj ) {
 				if( obj.hasOwnProperty( k ) ) {
 					k = parseInt( k );
-					var lineWidth = 100 / Object.keys( obj ).length,
-						listHeight = $(singleChart + " ul").height() / 16;
 					// check if an election year already exists
 					if ( parseInt( sliderValue ) >= k ) {
-						str += "<li class='hint--right' data-hint='" + germanFloat( obj[k].turnout ) + "&thinsp;% (" + k + ")' style='width:" + lineWidth + "%; border-top:" + ( listHeight - ( ( listHeight * 0.01 ) * obj[k].turnout) ) + "em solid #f5f5f5; background:" + getLegendColor(obj[k].turnout) + ";'><span style='display: none;'>" + obj[k].turnout + "</span></li>";
+						str.push( "<li class='hint--right' data-hint='" + germanFloat( obj[k].turnout ) + "&thinsp;% (" + k + ")' style='width:" + lineWidth + "%; border-top:" + ( listHeight - ( ( listHeight * 0.01 ) * obj[k].turnout) ) + "em solid #f5f5f5; background:" + getLegendColor(obj[k].turnout) + ";'><span style='display: none;'>" + obj[k].turnout + "</span></li>" );
 						count++;
 					}
 				}
 			}
 
-			$(charts + " .chart-" + feature.id + " ul").html( str );
+			$( singleChart + "[data-id='" + feature.id + "'] ul" ).html( str.join( "" ) );
 
 			result.fillColor = getLegendColor( turnout );
 		}
+
 		return result;
 	}
 
@@ -205,7 +208,7 @@ $(function() {
 
 	function highlightFeature( e ) {
 		var layer = e.target;
-		$( singleChart ).not("[data-id='" + layer.feature.id + "']").addClass( deHighlight );
+		$( singleChart + ":not([data-id='" + layer.feature.id + "'])" ).addClass( deHighlight );
 		layer.setStyle({
 			fillColor: "#000",
 			fillOpacity: .5
@@ -220,7 +223,7 @@ $(function() {
 
 	function resetHighlight( e ) {
 		var layer = e.target;
-		$( singleChart ).not("[data-id='" + layer.feature.id + "']").removeClass( deHighlight );
+		$( singleChart + ":not([data-id='" + layer.feature.id + "'])" ).removeClass( deHighlight );
 		geojson.resetStyle( layer );
 		info.update();
 	}
