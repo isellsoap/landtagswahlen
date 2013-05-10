@@ -4,13 +4,16 @@ $(function() {
 	** Variables
 	**/
 
-	var map = L.map( "map" ).setView( [ 51.25, 10.75 ], 6 ),
+	var map = L.map( "map").setView([51.5, 10.9], 5.9),
 		electionYears = [],
 		// control that shows state info on hover
-		info = L.control(),
+		info = L.control( { position: "topright" } ),
 		legend = L.control( { position: "bottomright" } ),
 		sliderID = "#slider",
-		content = ".content",
+		charts = ".charts",
+		electionYear = ".year",
+		singleChartGrid = "y-u-1-4",
+		highlight = "single-chart--highlight",
 		geojson;
 
 	// var layer = L.tileLayer(
@@ -24,6 +27,10 @@ $(function() {
 	/*
 	** General functions
 	**/
+
+	function germanFloat( num ) {
+		return num.toString().replace(".",",");
+	}
 
 	// get last election year
 	function getLastYear( array, sliderValue ) {
@@ -61,7 +68,7 @@ $(function() {
 	// build an array of all election years and add lists for the sidebar
 	$.each( data.features, function ( key, val ) {
 		var obj = val.properties.data;
-		$('<div class="y-u-1-2 chart-' + val.id +'"><div class="y-ubox-inner" data-id=' + val.id +'><h2>' + val.properties.name + '</h2><ul/></div></div>').appendTo(".test");
+		$('<div class="' + singleChartGrid + ' chart-' + val.id +'"><div class="single-chart" data-id=' + val.id +'><h2>' + val.properties.name + '</h2><ul/></div></div>').appendTo( charts );
 		for( var k in obj ) {
 			if( obj.hasOwnProperty( k ) ) {
 				k = parseInt( k );
@@ -85,14 +92,14 @@ $(function() {
 		value: electionYears[ 0 ],
 		step: 1,
 		slide: function( e, ui ) {
-			$( content ).html( ui.value );
+			$( electionYear ).html( ui.value );
 			// call style function
 			geojson.setStyle( style );
 		}
 	});
 
 	// output current slider year
-	$( content ).html( $( sliderID ).slider( "value" ) );
+	$( electionYear ).html( $( sliderID ).slider( "value" ) );
 
 	/*
 	** Info box at the upper right corner
@@ -109,33 +116,33 @@ $(function() {
 	info.update = function( props ) {
 		// someone hovers over a polygon
 		if ( props ) {
+			$(this._div).show();
 			var sliderValue = $( sliderID ).slider( "value" );
 			this._div.innerHTML = "<b>" + props.name + "</b><br>";
 			// there has been an election in the sliderValue year
 			if( props.data[ sliderValue ] ) {
-				this._div.innerHTML += "Jahr: " + sliderValue + "<br>";
-				this._div.innerHTML += "Wahlbeteiligung: " + props.data[ sliderValue ].turnout;
+				this._div.innerHTML += germanFloat( props.data[ sliderValue ].turnout ) + "&thinsp;% (" + sliderValue + ")";
 			} else {
 				// put years in an array
-				var years = objectKeys( props.data );
+				var years = objectKeys( props.data ),
+					year = getLastYear( years, sliderValue );
 				// if no election ever happened
 				if ( parseInt( sliderValue ) < years[ 0 ] ) {
-					this._div.innerHTML += "Es gab noch keine Wahl.";
+					this._div.innerHTML += "Bisher keine Wahl";
 				} else {
-					var year = getLastYear( years, sliderValue );
-					this._div.innerHTML += "Letzte Wahl im Jahr " + year + "<br>";
-					this._div.innerHTML += "Wahlbeteiligung: " + props.data[ year ].turnout;
+					this._div.innerHTML += germanFloat( props.data[ year ].turnout ) + "&thinsp;% (" + year + ")";
 				}
 			}
 		} else {
-			this._div.innerHTML = "Wähle ein Bundesland aus";
+			$(this._div).hide();
 		}
 	};
 
 	info.addTo(map);
 
 	function style( feature ) {
-		var sliderValue = $( content ).html(),
+
+		var sliderValue = $( electionYear ).html(),
 			years = objectKeys( feature.properties.data ),
 			year = getLastYear( years, sliderValue ),
 			result = {
@@ -149,7 +156,7 @@ $(function() {
 
 		if ( parseInt( sliderValue ) < years[ 0 ] ) {
 			result.fillOpacity = 0.025;
-			$(".test .chart-" + feature.id + " ul").empty();
+			$(charts + " .chart-" + feature.id + " ul").empty();
 		} else {
 			// value is either the current sliderValue or the last election year
 			var value =
@@ -164,24 +171,40 @@ $(function() {
 			for( var k in obj ) {
 				if( obj.hasOwnProperty( k ) ) {
 					k = parseInt( k );
+					var lineWidth = 100 / Object.keys( obj ).length,
+						listHeight = $(".single-chart ul").height() / 16;
 					// check if an election year already exists
 					if ( parseInt( sliderValue ) >= k ) {
+						str += "<li class='hint--right' data-hint='" + germanFloat( obj[k].turnout ) + "&thinsp;% (" + k + ")' style='width:" + lineWidth + "%; border-top:" + ( listHeight - ( ( listHeight * 0.01 ) * obj[k].turnout) ) + "em solid #f5f5f5; background:" + getLegendColor(obj[k].turnout) + ";'><span style='display: none;'>" + obj[k].turnout + "</span></li>";
 						count++;
-						str += "<li class='hint--right' data-hint='" + obj[k].turnout + " % (" + k + ")' style='left:" + (count * 4.5)  + "%; height:" + obj[k].turnout + "%; background:" + getLegendColor(obj[k].turnout) + ";'><span style='display: none;'>" + obj[k].turnout + "</span></li>";
 					}
 				}
 			}
 
-			$(".test .chart-" + feature.id + " ul").html( str );
+			$(charts + " .chart-" + feature.id + " ul").html( str );
 
 			result.fillColor = getLegendColor( turnout );
 		}
 		return result;
 	}
 
+	// $("button").click(function(){
+	// 	$(".single-chart").toggleClass("abbr");
+	// 	$.each( data.features, function ( key, val ) {
+	// 		var value =
+	// 			$(".single-chart").hasClass("abbr")
+	// 			? val.properties.abbr
+	// 			: val.properties.name;
+	// 		$(".single-chart h2").eq(key).html(value);
+	// 	});
+	// 	$(".sidebar").parent().toggleClass("bla1");
+	// 	$("#map").toggleClass("bla2");
+
+	// });
+
 	function highlightFeature( e ) {
 		var layer = e.target;
-		$(".test div").find("[data-id='" + layer.feature.id + "']").addClass("highlight");
+		$(charts + " div").find("[data-id='" + layer.feature.id + "']").addClass( highlight );
 		layer.setStyle({
 			fillColor: "#000",
 			fillOpacity: .5
@@ -196,7 +219,7 @@ $(function() {
 
 	function resetHighlight( e ) {
 		var layer = e.target;
-		$(".test div").find("[data-id='" + layer.feature.id + "']").removeClass("highlight");
+		$(charts + " div").find("[data-id='" + layer.feature.id + "']").removeClass( highlight );
 		geojson.resetStyle( layer );
 		info.update();
 	}
@@ -231,19 +254,22 @@ $(function() {
 	legend.onAdd = function( map ) {
 		var div = L.DomUtil.create( "div", "info legend" ),
 			grades = [ 40, 50, 60, 70, 80, 90, 100 ],
+			length = grades.length,
 			labels = [],
+			str = "",
 			from, to;
-		div.innerHTML = "Wahlbeteiligung in %<br>";
-		// loop through density intervals and generate label with colored square for each interval
-		for ( var i = 0, length = grades.length; i < length - 1; i++ ) {
-			from = grades[ i ];
-			to = grades[ i + 1 ];
+		str = "<h2>Wahlbet. in %</h2>";
+		str += "<ul>";
 
-			labels.push(
-				"<i style='background:" + getLegendColor( from + 1 ) + "'></i> " + from + "–" + to );
+		for ( var i = length - 1; i > 0; i-- ) {
+			from = grades[ i ];
+			to = grades[ i - 1 ];
+			labels.push( "<li style='border-left-color:" + getLegendColor( from - 1 ) + ";'>" + to + "+</li>" );
 		}
 
-		div.innerHTML += labels.join( "<br>" );
+		str += labels.join( "" );
+		str += "</ul>";
+		div.innerHTML = str;
 		return div;
 	};
 
