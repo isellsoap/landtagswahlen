@@ -19,6 +19,7 @@
 **/
 
 html,
+input,
 .leaflet-container {
   color: #333;
   font: 100%/1.5 'neue helvetica', helvetica, arial, sans-serif;
@@ -110,6 +111,62 @@ hr {
   border: solid #ccc;
   border-width: 1px 0 0;
   height: 0;
+}
+
+/*
+** Forms
+** ###########################################################################
+**/
+
+form {
+  font-size: .875em;
+}
+
+form:hover label,
+form:hover input {
+  opacity: 1;
+}
+
+label,
+input[type='checkbox'] {
+  cursor: pointer;
+  opacity: .66;
+}
+
+/*
+ * Check boxes and radio buttons
+ */
+
+input[type='checkbox'] {
+  line-height: normal;
+  margin: 2px 1px;
+  position: relative;
+  top: -.375em;
+  vertical-align: bottom;
+}
+
+/*
+** Firefox
+**/
+
+@-moz-document url-prefix() {
+
+  input[type='checkbox'] {
+    top: -.3125em;
+  }
+
+}
+
+/*
+** WebKit specific stuff.
+**/
+
+@media (-webkit-min-device-pixel-ratio: 0) {
+
+  input[type='checkbox'] {
+    top: -.25em;
+  }
+
 }
 
 /*

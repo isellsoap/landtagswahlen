@@ -3,7 +3,7 @@
 ** Variables
 **/
 
-var map = L.map( "map").setView([51.5, 10.9], 5.9),
+var map = L.map( "map").setView([51.5, 10.9], 6),
 	electionYears = [],
 	// control that shows state info on hover
 	info = L.control(),
@@ -16,13 +16,13 @@ var map = L.map( "map").setView([51.5, 10.9], 5.9),
 	deHighlight = "single-chart--de-highlight",
 	lineWidth, geojson;
 
-// var layer = L.tileLayer(
-// 	'http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png', {
-// 		key: '78af7957f2434beb8355688d730a10a4',
-// 		styleId: 22677,
-// 		attribution: 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>'
-// 	}
-// ).addTo(map);
+var layer = L.tileLayer(
+	'http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png', {
+		key: '980649775644402089a8c3bad401a72e',
+		styleId: 22677,
+		attribution: 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>'
+	}
+).setOpacity(0.5).addTo(map);
 
 /*
 ** General functions
@@ -159,7 +159,9 @@ function style( feature ) {
 		};
 
 	if ( parseInt( sliderValue ) < years[ 0 ] ) {
-		result.fillOpacity = 0.025;
+		result.fillOpacity = 1;
+		result.fillColor = '#fff';
+
 		// remove HTML
 		document.getElementsByClassName( "chart-" + feature.id )[0].getElementsByTagName( "ul" )[0].innerHTML = "";
 	} else {
@@ -192,19 +194,19 @@ function style( feature ) {
 	return result;
 }
 
-// $("button").click(function(){
-// 	$(".single-chart").toggleClass("abbr");
-// 	$.each( data.features, function ( key, val ) {
-// 		var value =
-// 			$(".single-chart").hasClass("abbr")
-// 			? val.properties.abbr
-// 			: val.properties.name;
-// 		$(".single-chart h2").eq(key).html(value);
-// 	});
-// 	$(".sidebar").parent().toggleClass("bla1");
-// 	$("#map").toggleClass("bla2");
+$(".charts").hide();
 
-// });
+$("#checkbox").change(function(){
+	// $(".single-chart").toggleClass("abbr");
+	// $.each( data.features, function ( key, val ) {
+	// 	var value =
+	// 		$(".single-chart").hasClass("abbr")
+	// 		? val.properties.abbr
+	// 		: val.properties.name;
+	// 	$(".single-chart h2").eq(key).html(value);
+	// });
+	$(".charts").toggle();
+});
 
 function highlightFeature( e ) {
 	var layer = e.target;
