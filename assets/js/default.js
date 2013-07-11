@@ -5,8 +5,7 @@
 
 var map = L.map( "map", {
 		center: new L.LatLng(51.5, 10.9),
-		zoom: 6,
-		layers: cities
+		zoom: 6
 	}),
 	electionYears = [],
 	// control that shows state info on hover
@@ -82,6 +81,11 @@ function circleRadius( r ) {
 			r > 10	? 2000 :
 			r > 5	? 1000 :
 					  500;
+}
+
+function roundNumber(number, digits) {
+	var multiple = Math.pow(10, digits);
+	return Math.round(number * multiple) / multiple;
 }
 
 // build an array of all election years and add lists for the sidebar
@@ -164,52 +168,9 @@ $( sliderID ).slider({
 // output current slider year
 document.getElementsByClassName( electionYear )[0].innerHTML = $( sliderID ).slider( "value" );
 
-/*
-** Info box at the upper right corner
-**/
-
-// info.onAdd = function( map ) {
-// 	// create div with class 'info'
-// 	this._div = L.DomUtil.create( "div", "info" );
-// 	this.update();
-// 	return this._div;
-// };
-
-// method that will update the control based on passed feature properties
-// info.update = function( props ) {
-// 	// someone hovers over a polygon
-// 	if ( props ) {
-// 		this._div.style.display = "block";
-// 		var sliderValue = $( sliderID ).slider( "value" );
-// 		this._div.innerHTML = "<b>" + props.name + "</b><br>";
-// 		// there has been an election in the sliderValue year
-// 		if( props.data[ sliderValue ] ) {
-// 			this._div.innerHTML += germanFloat( props.data[ sliderValue ].turnout ) + "&thinsp;% (" + sliderValue + ")";
-// 		} else {
-// 			// put years in an array
-// 			var years = objectKeys( props.data ),
-// 				year = getLastYear( years, sliderValue );
-// 			// if no election ever happened
-// 			if ( parseInt( sliderValue ) < years[ 0 ] ) {
-// 				this._div.innerHTML += "Bisher keine Wahl";
-// 			} else {
-// 				this._div.innerHTML += germanFloat( props.data[ year ].turnout ) + "&thinsp;% (" + year + ")";
-// 			}
-// 		}
-// 	} else {
-// 		this._div.style.display = "none";
-// 	}
-// };
-
-// info.addTo( map );
-
-var circles = [];
-var cities = L.layerGroup(circles);
-L.control.layers({}, {"Circles": cities}).addTo(map);
-
 function style( feature ) {
 
-	var sliderValue = document.getElementsByClassName( electionYear )[0].innerHTML,
+	var sliderValue = +document.getElementsByClassName( electionYear )[0].innerHTML,
 		years = objectKeys( feature.properties.data ),
 		year = getLastYear( years, sliderValue ),
 		result = {
@@ -220,11 +181,6 @@ function style( feature ) {
 			opacity: 1,
 			color: "#fff"
 		};
-
-	if(feature.id === 1) {
-		circles = [];
-		// L.control.layers({}, {"Circles": cities}).removeFrom(map);
-	}
 
 	var bounds = new L.LatLngBounds(),
 		polygonCoords = feature.geometry.coordinates;
@@ -244,7 +200,6 @@ function style( feature ) {
 				}
 			}
 		}
-
 	}
 
 	if ( parseInt( sliderValue ) < years[ 0 ] ) {
@@ -255,7 +210,6 @@ function style( feature ) {
 		document.getElementsByClassName( "chart-" + feature.id )[0].getElementsByTagName( "ul" )[0].innerHTML = "";
 	} else {
 		// value is either the current sliderValue or the last election year
-
 		var value =
 				feature.properties.data[ sliderValue ]
 				? sliderValue
@@ -267,58 +221,72 @@ function style( feature ) {
 
 		var arrResult = [];
 
+		// console.log(years);
+		// compute turnout changes
+		for (var i = 1; i < years.length; i++) {
+			arrResult.push([years[i], roundNumber(obj[years[i]].turnout - obj[years[i - 1]].turnout, 2)]);
+		}
+
 		for( var k in obj ) {
 			if( obj.hasOwnProperty( k ) ) {
 				var thisTurnout = obj[ k ].turnout;
-				if(feature.properties.name === "Berlin") { console.log(thisTurnout); }
 				k = parseInt( k );
 				// check if an election year already exists
 				if ( parseInt( sliderValue ) >= k ) {
-
-					if (year) {
-
-						var difference = thisTurnout - obj[year].turnout,
-							colorCircle =
-								difference < 0
-								? "#834d8e"
-								: "#4a833e";
-						if( difference && feature.properties.data[ sliderValue ] ) {
-								if(feature.properties.name === "Berlin") {
-									//console.log(feature.properties.name + ": " + difference);
-									//console.log(thisTurnout + " - " + obj[year].turnout + " = " + (thisTurnout - obj[year].turnout) );
-									// console.log("obj[year].turnout: " + obj[year].turnout);
-									// console.log("differ: " + obj[year].turnout);
-								}
-
-							var circle = L.circle(bounds.getCenter(), circleRadius( difference ) * 7, {
-								color: colorCircle,
-								fillColor: colorCircle,
-								fillOpacity: 1
-							}).addTo(map);
-
-							circles.push(circle);
-
-
-
-						}
-
-					}
-
 					str += "<li class='hint--right' data-hint='" + germanFloat( thisTurnout ) + "&thinsp;% (" + k + ")' style='width:" + lineWidth + "%; border-top:" + ( listHeight - ( listHeight * 0.01 * thisTurnout ) ) + "em solid #f5f5f5; background:" + getLegendColor( thisTurnout ) + ";'><span style='display: none;'>" + thisTurnout + "</span></li>";
 				}
 			}
-
 		}
+
+// if(window["featureNumber" + feature.id]) {
+// 	console.log("is defined");
+// } else {
+// 	window["featureNumber" + feature.id] = "featureNumber" + feature.id;
+// 	console.log(featureNumber + feature.id);
+// }
+	
+
+	
+		for (var i = 0; i < arrResult.length; i++) {
+			if(arrResult[i][0] === sliderValue) {
+				var colorCircle = 
+					arrResult[i][1] < 0
+					? "#ff0000"
+					: "#00ff00";
+
+				map.removeLayer(window["featureNumber" + feature.id]);
+
+				window["featureNumber" + feature.id] = new L.circle(
+					bounds.getCenter(), circleRadius( arrResult[i][1] ) * 20, {
+						color: colorCircle,
+						fillColor: colorCircle,
+						fillOpacity: 1
+					}
+				).addTo(map);
+
+				console.log("success");
+				break;
+			}
+		}
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 		$( "." + singleChart + "[data-id='" + feature.id + "'] ul" ).html( str );
 
 		result.fillColor = getLegendColor( turnout );
-	}
-
-	if(feature.id === 16) {
-
-		cities = L.layerGroup(circles);
-
 	}
 
 	return result;
@@ -357,6 +325,7 @@ function zoomToFeature( e ) {
 }
 
 function onEachFeature( feature, layer ) {
+	
 	layer.on({
 		mouseover: highlightFeature,
 		mouseout: resetHighlight,
@@ -374,6 +343,12 @@ geojson = L.geoJson(data, {
 	style: style,
 	onEachFeature: onEachFeature
 }).addTo( map );
+
+geojson.eachLayer(function (layer) {
+	window["featureNumber" + layer.feature.id] = new L.circle(
+		[0,0], 0
+	).addTo(map);
+});
 
 /*
 ** Legend
