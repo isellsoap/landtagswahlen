@@ -3,7 +3,11 @@
 ** Variables
 **/
 
-var map = L.map( "map").setView([51.5, 10.9], 6),
+var map = L.map( "map", {
+		center: new L.LatLng(51.5, 10.9),
+		zoom: 6,
+		layers: cities
+	}),
 	electionYears = [],
 	// control that shows state info on hover
 	info = L.control(),
@@ -16,13 +20,13 @@ var map = L.map( "map").setView([51.5, 10.9], 6),
 	deHighlight = "single-chart--de-highlight",
 	lineWidth, geojson;
 
-var layer = L.tileLayer(
-	'http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png', {
-		key: '980649775644402089a8c3bad401a72e',
-		styleId: 22677,
-		attribution: 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>'
-	}
-).setOpacity(0.5).addTo(map);
+// var layer = L.tileLayer(
+// 	'http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png', {
+// 		key: '980649775644402089a8c3bad401a72e',
+// 		styleId: 22677,
+// 		attribution: 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>'
+// 	}
+// ).setOpacity(0.5).addTo(map);
 
 /*
 ** General functions
@@ -63,6 +67,21 @@ function getLegendColor( d ) {
 			d > 50	? "#b792b5" :
 			d > 40	? "#834d8e" :
 					  "#fff";
+}
+
+function circleRadius( r ) {
+	r = Math.abs(r);
+	return	r > 60	? 10000 :
+			r > 45	? 9000 :
+			r > 40	? 8000 :
+			r > 35	? 7000 :
+			r > 30	? 6000 :
+			r > 25	? 5000 :
+			r > 20	? 4000 :
+			r > 15	? 3000 :
+			r > 10	? 2000 :
+			r > 5	? 1000 :
+					  500;
 }
 
 // build an array of all election years and add lists for the sidebar
@@ -109,40 +128,44 @@ document.getElementsByClassName( electionYear )[0].innerHTML = $( sliderID ).sli
 ** Info box at the upper right corner
 **/
 
-info.onAdd = function( map ) {
-	// create div with class 'info'
-	this._div = L.DomUtil.create( "div", "info" );
-	this.update();
-	return this._div;
-};
+// info.onAdd = function( map ) {
+// 	// create div with class 'info'
+// 	this._div = L.DomUtil.create( "div", "info" );
+// 	this.update();
+// 	return this._div;
+// };
 
 // method that will update the control based on passed feature properties
-info.update = function( props ) {
-	// someone hovers over a polygon
-	if ( props ) {
-		this._div.style.display = "block";
-		var sliderValue = $( sliderID ).slider( "value" );
-		this._div.innerHTML = "<b>" + props.name + "</b><br>";
-		// there has been an election in the sliderValue year
-		if( props.data[ sliderValue ] ) {
-			this._div.innerHTML += germanFloat( props.data[ sliderValue ].turnout ) + "&thinsp;% (" + sliderValue + ")";
-		} else {
-			// put years in an array
-			var years = objectKeys( props.data ),
-				year = getLastYear( years, sliderValue );
-			// if no election ever happened
-			if ( parseInt( sliderValue ) < years[ 0 ] ) {
-				this._div.innerHTML += "Bisher keine Wahl";
-			} else {
-				this._div.innerHTML += germanFloat( props.data[ year ].turnout ) + "&thinsp;% (" + year + ")";
-			}
-		}
-	} else {
-		this._div.style.display = "none";
-	}
-};
+// info.update = function( props ) {
+// 	// someone hovers over a polygon
+// 	if ( props ) {
+// 		this._div.style.display = "block";
+// 		var sliderValue = $( sliderID ).slider( "value" );
+// 		this._div.innerHTML = "<b>" + props.name + "</b><br>";
+// 		// there has been an election in the sliderValue year
+// 		if( props.data[ sliderValue ] ) {
+// 			this._div.innerHTML += germanFloat( props.data[ sliderValue ].turnout ) + "&thinsp;% (" + sliderValue + ")";
+// 		} else {
+// 			// put years in an array
+// 			var years = objectKeys( props.data ),
+// 				year = getLastYear( years, sliderValue );
+// 			// if no election ever happened
+// 			if ( parseInt( sliderValue ) < years[ 0 ] ) {
+// 				this._div.innerHTML += "Bisher keine Wahl";
+// 			} else {
+// 				this._div.innerHTML += germanFloat( props.data[ year ].turnout ) + "&thinsp;% (" + year + ")";
+// 			}
+// 		}
+// 	} else {
+// 		this._div.style.display = "none";
+// 	}
+// };
 
-info.addTo( map );
+// info.addTo( map );
+
+var circles = [];
+var cities = L.layerGroup(circles);
+L.control.layers({}, {"Circles": cities}).addTo(map);
 
 function style( feature ) {
 
@@ -157,6 +180,32 @@ function style( feature ) {
 			opacity: 1,
 			color: "#fff"
 		};
+
+	if(feature.id === 1) {
+		circles = [];
+		// L.control.layers({}, {"Circles": cities}).removeFrom(map);
+	}
+
+	var bounds = new L.LatLngBounds(),
+		polygonCoords = feature.geometry.coordinates;
+
+	if(feature.geometry.type === "Polygon") {
+		// weird: one must switch longitude and langitude
+		for (var i = 0; i < polygonCoords[0].length; i++) {
+		  bounds.extend([polygonCoords[0][i][1], polygonCoords[0][i][0]]);
+		}
+
+	} else if (feature.geometry.type === "MultiPolygon")  {
+		// weird: one must switch longitude and langitude
+		for (var i = 0; i < polygonCoords.length; i++) {
+			for (var j = 0; j < polygonCoords[i].length; j++) {
+				for (var k = 0; k < polygonCoords[i][j].length; k++) {
+					bounds.extend([polygonCoords[i][j][k][1], polygonCoords[i][j][k][0]]);
+				}
+			}
+		}
+
+	}
 
 	if ( parseInt( sliderValue ) < years[ 0 ] ) {
 		result.fillOpacity = 1;
@@ -181,6 +230,30 @@ function style( feature ) {
 				k = parseInt( k );
 				// check if an election year already exists
 				if ( parseInt( sliderValue ) >= k ) {
+
+					if (year) {
+						var difference = thisTurnout - obj[ year ].turnout,
+							colorCircle =
+								difference < 0
+								? "#834d8e"
+								: "#4a833e";
+
+						if( difference ) {
+
+							var circle = L.circle(bounds.getCenter(), circleRadius( difference ) * 5, {
+								color: colorCircle,
+								fillColor: colorCircle,
+								fillOpacity: 1
+							}).addTo(map);
+
+							circles.push(circle);
+
+
+
+						}
+
+					}
+
 					str += "<li class='hint--right' data-hint='" + germanFloat( thisTurnout ) + "&thinsp;% (" + k + ")' style='width:" + lineWidth + "%; border-top:" + ( listHeight - ( listHeight * 0.01 * thisTurnout ) ) + "em solid #f5f5f5; background:" + getLegendColor( thisTurnout ) + ";'><span style='display: none;'>" + thisTurnout + "</span></li>";
 				}
 			}
@@ -189,6 +262,12 @@ function style( feature ) {
 		$( "." + singleChart + "[data-id='" + feature.id + "'] ul" ).html( str );
 
 		result.fillColor = getLegendColor( turnout );
+	}
+
+	if(feature.id === 16) {
+
+		cities = L.layerGroup(circles);
+
 	}
 
 	return result;
@@ -209,25 +288,48 @@ $("#checkbox").change(function(){
 });
 
 function highlightFeature( e ) {
-	var layer = e.target;
+	var layer = e.target,
+		poly = layer.feature.properties,
+		str = "";
+
 	$( "." + singleChart + ":not([data-id='" + layer.feature.id + "'])" ).addClass( deHighlight );
 	layer.setStyle({
 		fillColor: "#000",
 		fillOpacity: .5
 	});
 
+	var sliderValue = $( sliderID ).slider( "value" );
+
+	str = poly.name + "<br>";
+	// there has been an election in the sliderValue year
+	if( poly.data[ sliderValue ] ) {
+		str += germanFloat( poly.data[ sliderValue ].turnout ) + "&thinsp;% (" + sliderValue + ")";
+	} else {
+		// put years in an array
+		var years = objectKeys( poly.data ),
+			year = getLastYear( years, sliderValue );
+		// if no election ever happened
+		if ( parseInt( sliderValue ) < years[ 0 ] ) {
+			str += "Bisher keine Wahl";
+		} else {
+			str += germanFloat( poly.data[ year ].turnout ) + "&thinsp;% (" + year + ")";
+		}
+	}
+
+	layer.bindLabel(str).addTo(map);
+
 	if ( !L.Browser.ie && !L.Browser.opera ) {
 		layer.bringToFront();
 	}
 
-	info.update( layer.feature.properties );
+	//info.update( layer.feature.properties );
 }
 
 function resetHighlight( e ) {
 	var layer = e.target;
 	$( "." + singleChart + ":not([data-id='" + layer.feature.id + "'])" ).removeClass( deHighlight );
 	geojson.resetStyle( layer );
-	info.update();
+	//info.update();
 }
 
 function zoomToFeature( e ) {
