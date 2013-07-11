@@ -158,6 +158,9 @@ $( sliderID ).slider({
 	}
 });
 
+
+
+
 // output current slider year
 document.getElementsByClassName( electionYear )[0].innerHTML = $( sliderID ).slider( "value" );
 
@@ -324,21 +327,11 @@ function style( feature ) {
 $(".charts").hide();
 
 $("#checkbox").change(function(){
-	// $(".single-chart").toggleClass("abbr");
-	// $.each( data.features, function ( key, val ) {
-	// 	var value =
-	// 		$(".single-chart").hasClass("abbr")
-	// 		? val.properties.abbr
-	// 		: val.properties.name;
-	// 	$(".single-chart h2").eq(key).html(value);
-	// });
 	$(".charts").toggle();
 });
 
 function highlightFeature( e ) {
-	var layer = e.target,
-		poly = layer.feature.properties,
-		str = "";
+	var layer = e.target;
 
 	$( "." + singleChart + ":not([data-id='" + layer.feature.id + "'])" ).addClass( deHighlight );
 	layer.setStyle({
@@ -346,32 +339,10 @@ function highlightFeature( e ) {
 		fillOpacity: .5
 	});
 
-	var sliderValue = $( sliderID ).slider( "value" );
-
-	str = poly.name + "<br>";
-	// there has been an election in the sliderValue year
-	if( poly.data[ sliderValue ] ) {
-		str += germanFloat( poly.data[ sliderValue ].turnout ) + "&thinsp;% (" + sliderValue + ")";
-	} else {
-		// put years in an array
-		var years = objectKeys( poly.data ),
-			year = getLastYear( years, sliderValue );
-		// if no election ever happened
-		if ( parseInt( sliderValue ) < years[ 0 ] ) {
-			str += "Bisher keine Wahl";
-		} else {
-			str += germanFloat( poly.data[ year ].turnout ) + "&thinsp;% (" + year + ")";
-		}
-	}
-
-	//layer.bindLabel(str).addTo(map);
-
-
 	if ( !L.Browser.ie && !L.Browser.opera ) {
 		layer.bringToFront();
 	}
 
-	//info.update( layer.feature.properties );
 }
 
 function resetHighlight( e ) {
