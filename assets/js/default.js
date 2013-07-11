@@ -109,6 +109,34 @@ var listHeight = document.getElementsByClassName( singleChart )[0].getElementsBy
 ** Slider
 **/
 
+function labelStuff(layer, sliderValue) {
+	var poly = layer.feature.properties,
+		str = "";
+
+	$( "." + singleChart + ":not([data-id='" + layer.feature.id + "'])" ).addClass( deHighlight );
+	layer.setStyle({
+		fillColor: "#000",
+		fillOpacity: .5
+	});
+
+	str = poly.name + "<br>";
+	// there has been an election in the sliderValue year
+	if( poly.data[ sliderValue ] ) {
+		str += germanFloat( poly.data[ sliderValue ].turnout ) + "&thinsp;% (" + sliderValue + ")";
+	} else {
+		// put years in an array
+		var years = objectKeys( poly.data ),
+			year = getLastYear( years, sliderValue );
+		// if no election ever happened
+		if ( parseInt( sliderValue ) < years[ 0 ] ) {
+			str += "Bisher keine Wahl";
+		} else {
+			str += germanFloat( poly.data[ year ].turnout ) + "&thinsp;% (" + year + ")";
+		}
+	}
+	return str;
+}
+
 $( sliderID ).slider({
 	min: electionYears[ 0 ],
 	max: electionYears[ electionYears.length - 1 ],
@@ -116,6 +144,15 @@ $( sliderID ).slider({
 	step: 1,
 	slide: function( e, ui ) {
 		document.getElementsByClassName( electionYear )[0].innerHTML = ui.value;
+
+		geojson.eachLayer(function (layer) {
+
+			
+		    // layer.feature is available
+		    layer.bindLabel(labelStuff(layer, ui.value));
+		});
+
+
 		// call style function
 		geojson.setStyle( style );
 	}
@@ -215,6 +252,7 @@ function style( feature ) {
 		document.getElementsByClassName( "chart-" + feature.id )[0].getElementsByTagName( "ul" )[0].innerHTML = "";
 	} else {
 		// value is either the current sliderValue or the last election year
+
 		var value =
 				feature.properties.data[ sliderValue ]
 				? sliderValue
@@ -224,21 +262,30 @@ function style( feature ) {
 			str = "";
 		lineWidth = 100 / Object.keys( obj ).length;
 
+		var arrResult = [];
+
 		for( var k in obj ) {
 			if( obj.hasOwnProperty( k ) ) {
 				var thisTurnout = obj[ k ].turnout;
+				if(feature.properties.name === "Berlin") { console.log(thisTurnout); }
 				k = parseInt( k );
 				// check if an election year already exists
 				if ( parseInt( sliderValue ) >= k ) {
 
 					if (year) {
-						var difference = thisTurnout - obj[ year ].turnout,
+
+						var difference = thisTurnout - obj[year].turnout,
 							colorCircle =
 								difference < 0
 								? "#834d8e"
 								: "#4a833e";
-
-						if( difference ) {
+						if( difference && feature.properties.data[ sliderValue ] ) {
+								if(feature.properties.name === "Berlin") {
+									//console.log(feature.properties.name + ": " + difference);
+									//console.log(thisTurnout + " - " + obj[year].turnout + " = " + (thisTurnout - obj[year].turnout) );
+									// console.log("obj[year].turnout: " + obj[year].turnout);
+									// console.log("differ: " + obj[year].turnout);
+								}
 
 							var circle = L.circle(bounds.getCenter(), circleRadius( difference ) * 7, {
 								color: colorCircle,
@@ -257,6 +304,7 @@ function style( feature ) {
 					str += "<li class='hint--right' data-hint='" + germanFloat( thisTurnout ) + "&thinsp;% (" + k + ")' style='width:" + lineWidth + "%; border-top:" + ( listHeight - ( listHeight * 0.01 * thisTurnout ) ) + "em solid #f5f5f5; background:" + getLegendColor( thisTurnout ) + ";'><span style='display: none;'>" + thisTurnout + "</span></li>";
 				}
 			}
+
 		}
 
 		$( "." + singleChart + "[data-id='" + feature.id + "'] ul" ).html( str );
@@ -316,7 +364,8 @@ function highlightFeature( e ) {
 		}
 	}
 
-	layer.bindLabel(str).addTo(map);
+	//layer.bindLabel(str).addTo(map);
+
 
 	if ( !L.Browser.ie && !L.Browser.opera ) {
 		layer.bringToFront();
