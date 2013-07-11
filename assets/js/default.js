@@ -298,30 +298,6 @@ function highlightFeature( e ) {
 		fillOpacity: .5
 	});
 
-	
-
-	if ( !L.Browser.ie && !L.Browser.opera ) {
-		layer.bringToFront();
-	}
-
-	//info.update( layer.feature.properties );
-}
-
-function resetHighlight( e ) {
-	var layer = e.target;
-	$( "." + singleChart + ":not([data-id='" + layer.feature.id + "'])" ).removeClass( deHighlight );
-	geojson.resetStyle( layer );
-	//info.update();
-}
-
-function zoomToFeature( e ) {
-	map.fitBounds( e.target.getBounds() );
-}
-
-function onEachFeature( feature, layer ) {
-
-	var poly = layer.feature.properties;
-	
 	var sliderValue = $( sliderID ).slider( "value" );
 
 	str = poly.name + "<br>";
@@ -342,6 +318,25 @@ function onEachFeature( feature, layer ) {
 
 	layer.bindLabel(str).addTo(map);
 
+	if ( !L.Browser.ie && !L.Browser.opera ) {
+		layer.bringToFront();
+	}
+
+	//info.update( layer.feature.properties );
+}
+
+function resetHighlight( e ) {
+	var layer = e.target;
+	$( "." + singleChart + ":not([data-id='" + layer.feature.id + "'])" ).removeClass( deHighlight );
+	geojson.resetStyle( layer );
+	//info.update();
+}
+
+function zoomToFeature( e ) {
+	map.fitBounds( e.target.getBounds() );
+}
+
+function onEachFeature( feature, layer ) {
 	layer.on({
 		mouseover: highlightFeature,
 		mouseout: resetHighlight,
