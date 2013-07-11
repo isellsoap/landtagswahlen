@@ -20,13 +20,13 @@ var map = L.map( "map", {
 	deHighlight = "single-chart--de-highlight",
 	lineWidth, geojson;
 
-// var layer = L.tileLayer(
-// 	'http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png', {
-// 		key: '980649775644402089a8c3bad401a72e',
-// 		styleId: 22677,
-// 		attribution: 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>'
-// 	}
-// ).setOpacity(0.5).addTo(map);
+var layer = L.tileLayer(
+	'http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png', {
+		key: '980649775644402089a8c3bad401a72e',
+		styleId: 22677,
+		attribution: 'Map data © <a href="http://openstreetmap.org">OpenStreetMap</a> contributors, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>'
+	}
+).setOpacity(0.5).addTo(map);
 
 /*
 ** General functions
@@ -240,7 +240,7 @@ function style( feature ) {
 
 						if( difference ) {
 
-							var circle = L.circle(bounds.getCenter(), circleRadius( difference ) * 5, {
+							var circle = L.circle(bounds.getCenter(), circleRadius( difference ) * 7, {
 								color: colorCircle,
 								fillColor: colorCircle,
 								fillOpacity: 1
@@ -298,25 +298,7 @@ function highlightFeature( e ) {
 		fillOpacity: .5
 	});
 
-	var sliderValue = $( sliderID ).slider( "value" );
-
-	str = poly.name + "<br>";
-	// there has been an election in the sliderValue year
-	if( poly.data[ sliderValue ] ) {
-		str += germanFloat( poly.data[ sliderValue ].turnout ) + "&thinsp;% (" + sliderValue + ")";
-	} else {
-		// put years in an array
-		var years = objectKeys( poly.data ),
-			year = getLastYear( years, sliderValue );
-		// if no election ever happened
-		if ( parseInt( sliderValue ) < years[ 0 ] ) {
-			str += "Bisher keine Wahl";
-		} else {
-			str += germanFloat( poly.data[ year ].turnout ) + "&thinsp;% (" + year + ")";
-		}
-	}
-
-	layer.bindLabel(str).addTo(map);
+	
 
 	if ( !L.Browser.ie && !L.Browser.opera ) {
 		layer.bringToFront();
@@ -337,6 +319,29 @@ function zoomToFeature( e ) {
 }
 
 function onEachFeature( feature, layer ) {
+
+	var poly = layer.feature.properties;
+	
+	var sliderValue = $( sliderID ).slider( "value" );
+
+	str = poly.name + "<br>";
+	// there has been an election in the sliderValue year
+	if( poly.data[ sliderValue ] ) {
+		str += germanFloat( poly.data[ sliderValue ].turnout ) + "&thinsp;% (" + sliderValue + ")";
+	} else {
+		// put years in an array
+		var years = objectKeys( poly.data ),
+			year = getLastYear( years, sliderValue );
+		// if no election ever happened
+		if ( parseInt( sliderValue ) < years[ 0 ] ) {
+			str += "Bisher keine Wahl";
+		} else {
+			str += germanFloat( poly.data[ year ].turnout ) + "&thinsp;% (" + year + ")";
+		}
+	}
+
+	layer.bindLabel(str).addTo(map);
+
 	layer.on({
 		mouseover: highlightFeature,
 		mouseout: resetHighlight,
