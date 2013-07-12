@@ -246,8 +246,8 @@ function style( feature ) {
 			if(arrResult[i][0] === value ) {
 				var colorCircle =
 					arrResult[i][1] < 0
-					? "#834d8e"
-					: "#4a833e";
+					? "#ff0000"
+					: "#00ff00";
 
 				map.removeLayer(window["featureNumber" + feature.id]);
 				// console.log(arrResult[i][1]);
@@ -384,7 +384,7 @@ legend.onAdd = function( map ) {
 legend.addTo( map );
 
 legend2.onAdd = function( map ) {
-	var div = L.DomUtil.create( "div", "info legend2" ),
+	var div = L.DomUtil.create( "div", "info legend2 cf" ),
 		grades = [ 0.1, 5.1, 10.1, 15.1 ],
 		grades2 = [ 0, 5, 10, 15 ],
 		length = grades.length,
@@ -392,6 +392,8 @@ legend2.onAdd = function( map ) {
 		str = "",
 		from, to;
 	str = "<h2>Unterschied zur Vorwahl in %</h2>";
+	str += "<p><span class='positiv'></span> positiv<br>";
+	str += "<span class='negativ'></span> negativ</p>";
 	str += "<ul class='cf'>";
 	for ( var i = 0; i < length; i++ ) {
 		from = grades[ i ];

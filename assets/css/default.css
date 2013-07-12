@@ -226,7 +226,7 @@ svg:not(:root) {
   letter-spacing: 1px;
   font-weight: 400;
   margin-left: .25em;
-  padding: .5em .5em .25em;
+  padding: .25em .5em;
   border-radius: 3px;
 }
 
@@ -311,6 +311,10 @@ svg:not(:root) {
   margin-bottom: 2px;
 }
 
+.legend2 ul {
+  float: right;
+}
+
 .legend li {
   border-left: 1.375em solid;
   height: 1.375em;
@@ -357,6 +361,25 @@ svg:not(:root) {
 .legend2 li[data-radius="50000"] {
   width: 60px;
   height: 60px;
+}
+
+.legend2 p {
+  float: left;
+  margin: 10px 15px 10px 10px;
+}
+
+.legend2 p span {
+  height: 1.25em;
+  width: 2em;
+  display: inline-block;
+}
+
+.legend2 p .positiv {
+  background: #0f0;
+}
+
+.legend2 p .negativ {
+  background: #f00;
 }
 
 .leaflet-control-attribution {
