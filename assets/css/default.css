@@ -226,7 +226,8 @@ svg:not(:root) {
   letter-spacing: 1px;
   font-weight: 400;
   margin-left: .25em;
-  padding: .25em .5em;
+  padding: .5em .5em .25em;
+  border-radius: 3px;
 }
 
 #slider {
