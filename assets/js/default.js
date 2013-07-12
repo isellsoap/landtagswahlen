@@ -17,7 +17,7 @@ var map = L.map( "map", {
 	singleChart = "single-chart",
 	singleChartGrid = "y-u-1-4",
 	deHighlight = "single-chart--de-highlight",
-	lineWidth, geojson;
+	lineWidth, geojson, fillThisCircle, clickableProp;
 
 var layer = L.tileLayer(
 	'http://{s}.tile.cloudmade.com/{key}/{styleId}/256/{z}/{x}/{y}.png', {
@@ -70,16 +70,10 @@ function getLegendColor( d ) {
 
 function circleRadius( r ) {
 	r = Math.abs(r);
-	return	r > 60	? 10000 :
-			r > 45	? 9000 :
-			r > 40	? 8000 :
-			r > 35	? 7000 :
-			r > 30	? 6000 :
-			r > 25	? 5000 :
-			r > 20	? 4000 :
-			r > 15	? 3000 :
-			r > 10	? 2000 :
-			r > 5	? 1000 :
+	return	r > 15	? 100000 :
+			r > 10	? 25000 :
+			r > 5	? 12500 :
+			r > 0	? 6250 :
 					  500;
 }
 
@@ -116,12 +110,6 @@ var listHeight = document.getElementsByClassName( singleChart )[0].getElementsBy
 function labelStuff(layer, sliderValue) {
 	var poly = layer.feature.properties,
 		str = "";
-
-	$( "." + singleChart + ":not([data-id='" + layer.feature.id + "'])" ).addClass( deHighlight );
-	layer.setStyle({
-		fillColor: "#000",
-		fillOpacity: .5
-	});
 
 	str = poly.name + "<br>";
 	// there has been an election in the sliderValue year
@@ -244,15 +232,15 @@ function style( feature ) {
 			}
 		}
 
-// if(window["featureNumber" + feature.id]) {
-// 	console.log("is defined");
-// } else {
-// 	window["featureNumber" + feature.id] = "featureNumber" + feature.id;
-// 	console.log(featureNumber + feature.id);
-// }
+		if ($('#checkbox2').is(':checked')) {
+			fillThisCircle = 1;
+			clickableProp = true;
+		} else {
+			fillThisCircle = 0;
+			clickableProp = false;
+		}
 
-
-
+		// create circle
 		for (var i = 0; i < arrResult.length; i++) {
 			if(arrResult[i][0] === value ) {
 				var colorCircle =
@@ -261,43 +249,26 @@ function style( feature ) {
 					: "#00ff00";
 
 				map.removeLayer(window["featureNumber" + feature.id]);
-
+				// console.log(arrResult[i][1]);
 				window["featureNumber" + feature.id] = new L.circle(
-					bounds.getCenter(), circleRadius( arrResult[i][1] ) * 20, {
-						color: colorCircle,
+					bounds.getCenter(), circleRadius( arrResult[i][1] ), {
+						color: 'transparent',
 						fillColor: colorCircle,
-						fillOpacity: 1
+						fillOpacity: fillThisCircle,
+						clickable: clickableProp
 					}
-				).addTo(map);
+				).bindLabel(germanFloat(arrResult[i][1]) + " % Unterschied zur<br> Vorwahl " + year + " in " + feature.properties.name);
 
-				// console.log("success");
+				map.addLayer(window["featureNumber" + feature.id]);
+
 				break;
 			}
-		}
+
 
 		if(arrResult[0][0] > value) {
 			map.removeLayer(window["featureNumber" + feature.id]);
 		}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		}
 
 		$( "." + singleChart + "[data-id='" + feature.id + "'] ul" ).html( str );
 
@@ -309,8 +280,24 @@ function style( feature ) {
 
 $(".charts").hide();
 
-$("#checkbox").change(function(){
+$("#checkbox1").change(function(){
 	$(".charts").toggle();
+});
+
+$("#checkbox2").change(function() {
+	if ($('#checkbox2').is(':checked')) {
+			fillThisCircle = 1;
+			clickableProp = true;
+		} else {
+			fillThisCircle = 0;
+			clickableProp = false;
+		}
+	geojson.eachLayer(function (layer) {
+		window["featureNumber" + layer.feature.id].setStyle({
+			fillOpacity: fillThisCircle,
+			clickable: clickableProp
+		});
+	});
 });
 
 function highlightFeature( e ) {
@@ -322,9 +309,9 @@ function highlightFeature( e ) {
 		fillOpacity: .5
 	});
 
-	if ( !L.Browser.ie && !L.Browser.opera ) {
-		layer.bringToFront();
-	}
+	// if ( !L.Browser.ie && !L.Browser.opera ) {
+	// 	layer.bringToFront();
+	// }
 
 }
 
@@ -359,6 +346,11 @@ geojson = L.geoJson(data, {
 	onEachFeature: onEachFeature
 }).addTo( map );
 
+geojson.eachLayer(function (layer) {
+	// layer.feature is available
+	layer.bindLabel(labelStuff(layer, +document.getElementsByClassName( electionYear )[0].innerHTML));
+});
+
 /*
 ** Legend
 **/
@@ -383,3 +375,6 @@ legend.onAdd = function( map ) {
 };
 
 legend.addTo( map );
+
+svgObj = $('path[stroke="transparent"]');
+svgObj.css('z-index', 9999);

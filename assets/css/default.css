@@ -212,6 +212,14 @@ svg:not(:root) {
   position: relative;
 }
 
+.sidebar form {
+  margin-bottom: .5em;
+}
+
+.sidebar label {
+  margin-right: 1em;
+}
+
 .year {
   background: #ededed;
   margin-left: .25em;
