@@ -151,7 +151,7 @@ $( sliderID ).slider({
 
 		geojson.eachLayer(function (layer) {
 
-			
+
 		    // layer.feature is available
 		    layer.bindLabel(labelStuff(layer, ui.value));
 		});
@@ -169,6 +169,12 @@ $( sliderID ).slider({
 document.getElementsByClassName( electionYear )[0].innerHTML = $( sliderID ).slider( "value" );
 
 function style( feature ) {
+
+	if(typeof window["featureNumber" + feature.id] === 'undefined') {
+		window["featureNumber" + feature.id] = new L.circle(
+			[0,0], 0
+		).addTo(map);
+	}
 
 	var sliderValue = +document.getElementsByClassName( electionYear )[0].innerHTML,
 		years = objectKeys( feature.properties.data ),
@@ -244,12 +250,12 @@ function style( feature ) {
 // 	window["featureNumber" + feature.id] = "featureNumber" + feature.id;
 // 	console.log(featureNumber + feature.id);
 // }
-	
 
-	
+
+
 		for (var i = 0; i < arrResult.length; i++) {
-			if(arrResult[i][0] === sliderValue) {
-				var colorCircle = 
+			if(arrResult[i][0] === value ) {
+				var colorCircle =
 					arrResult[i][1] < 0
 					? "#ff0000"
 					: "#00ff00";
@@ -264,11 +270,20 @@ function style( feature ) {
 					}
 				).addTo(map);
 
-				console.log("success");
+				// console.log("success");
 				break;
 			}
 		}
-	
+
+		if(arrResult[0][0] > value) {
+			map.removeLayer(window["featureNumber" + feature.id]);
+		}
+
+
+
+
+
+
 
 
 
@@ -325,7 +340,7 @@ function zoomToFeature( e ) {
 }
 
 function onEachFeature( feature, layer ) {
-	
+
 	layer.on({
 		mouseover: highlightFeature,
 		mouseout: resetHighlight,
@@ -343,12 +358,6 @@ geojson = L.geoJson(data, {
 	style: style,
 	onEachFeature: onEachFeature
 }).addTo( map );
-
-geojson.eachLayer(function (layer) {
-	window["featureNumber" + layer.feature.id] = new L.circle(
-		[0,0], 0
-	).addTo(map);
-});
 
 /*
 ** Legend
