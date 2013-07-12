@@ -10,7 +10,8 @@ var map = L.map( "map", {
 	electionYears = [],
 	// control that shows state info on hover
 	info = L.control(),
-	legend = L.control( { position: "bottomright" } ),
+	legend = L.control( { position: "topright" } ),
+	legend2 = L.control( { position: "bottomright" } ),
 	electionYear = "year",
 	sliderID = "#slider",
 	charts = ".charts",
@@ -70,11 +71,11 @@ function getLegendColor( d ) {
 
 function circleRadius( r ) {
 	r = Math.abs(r);
-	return	r > 15	? 100000 :
+	return	r > 15	? 50000 :
 			r > 10	? 25000 :
 			r > 5	? 12500 :
 			r > 0	? 6250 :
-					  500;
+					  1000;
 }
 
 function roundNumber(number, digits) {
@@ -245,14 +246,16 @@ function style( feature ) {
 			if(arrResult[i][0] === value ) {
 				var colorCircle =
 					arrResult[i][1] < 0
-					? "#ff0000"
-					: "#00ff00";
+					? "#834d8e"
+					: "#4a833e";
 
 				map.removeLayer(window["featureNumber" + feature.id]);
 				// console.log(arrResult[i][1]);
 				window["featureNumber" + feature.id] = new L.circle(
 					bounds.getCenter(), circleRadius( arrResult[i][1] ), {
-						color: 'transparent',
+						color: '#000000',
+						opacity: fillThisCircle,
+						weight: 1,
 						fillColor: colorCircle,
 						fillOpacity: fillThisCircle,
 						clickable: clickableProp
@@ -288,14 +291,18 @@ $("#checkbox2").change(function() {
 	if ($('#checkbox2').is(':checked')) {
 			fillThisCircle = 1;
 			clickableProp = true;
+			legend2.addTo( map );
 		} else {
 			fillThisCircle = 0;
 			clickableProp = false;
+			legend2.removeFrom( map );
 		}
 	geojson.eachLayer(function (layer) {
 		window["featureNumber" + layer.feature.id].setStyle({
 			fillOpacity: fillThisCircle,
-			clickable: clickableProp
+			clickable: clickableProp,
+			opacity: fillThisCircle,
+			weight: 1
 		});
 	});
 });
@@ -376,5 +383,22 @@ legend.onAdd = function( map ) {
 
 legend.addTo( map );
 
-svgObj = $('path[stroke="transparent"]');
-svgObj.css('z-index', 9999);
+legend2.onAdd = function( map ) {
+	var div = L.DomUtil.create( "div", "info legend2" ),
+		grades = [ 0.1, 5.1, 10.1, 15.1 ],
+		grades2 = [ 0, 5, 10, 15 ],
+		length = grades.length,
+		labels = [],
+		str = "",
+		from, to;
+	str = "<h2>Unterschied zur Vorwahl in %</h2>";
+	str += "<ul class='cf'>";
+	for ( var i = 0; i < length; i++ ) {
+		from = grades[ i ];
+		to = grades2[ i ];
+		str += "<li class='hint--top' data-hint='± " + to + "' data-radius='" + circleRadius(from) + "'></li>";
+	}
+	str += "</ul>";
+	div.innerHTML = str;
+	return div;
+};
